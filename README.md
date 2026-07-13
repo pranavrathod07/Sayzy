@@ -4,8 +4,8 @@
 
 Sayzy is a free, open-source AAC (Augmentative and Alternative Communication) app that turns a drawing, a letter, or a single tap into instant speech — built for people who can't speak, made to work in under a second.
 
-🌐 Website: [your-website-url-here]
-📱 Download: [your-download-link-here]
+🌐 Website: [https://sayzy.netlify.app/]
+📱 Download: [https://sayzy.netlify.app/]
 
 ---
 
