@@ -1,0 +1,28 @@
+PROMPT START
+
+There is a critical bug in the drawing canvas on the home screen and in the Customize screen's drawing input. Currently, the canvas is clearing/resetting itself every time the user lifts their finger (on touch-end/pointer-up), which makes it impossible to draw multi-stroke letters or symbols (for example, drawing a "K" requires one vertical stroke "|" plus a separate "<" stroke — but right now, lifting the finger after the first stroke erases it before the second stroke can be added).
+
+Fix this with the following logic:
+
+
+The canvas must maintain a persistent list of all strokes (e.g., List<Stroke> or equivalent) for the CURRENT gesture-in-progress. Each stroke is a separate list of points.
+On touch-start (pointer-down): begin a NEW stroke and add it to the current strokes list. Do NOT clear the canvas or the existing strokes list.
+On touch-move (pointer-move): keep adding points to the current active stroke and keep rendering all strokes (previous + current) on screen together.
+On touch-end (pointer-up): finalize the current stroke by adding it to the strokes list, but do NOT clear the canvas and do NOT trigger recognition yet. The user should be able to lift their finger and immediately start a second, third, or more strokes on the SAME drawing (e.g., drawing "|" then lifting and drawing "<" right next to it to complete a "K"), and all strokes must remain visible together on the canvas.
+Only clear the canvas and run gesture-recognition matching when one of these explicit triggers happens:
+
+The user taps a dedicated "Done/Submit" button or checkmark icon (add one small, unobtrusive button near the canvas if one doesn't already exist), OR
+A short inactivity timeout occurs after the last touch-end (e.g., 1.2 to 1.5 seconds with no new touch-start), which automatically finalizes the combined multi-stroke drawing and runs recognition.
+
+
+
+After recognition runs (whether it finds a match or not), THEN clear the canvas and reset the strokes list, ready for the next fresh drawing.
+
+
+Apply this exact fix to BOTH: (a) the main home screen drawing canvas, and (b) the drawing input inside the Customize/Add Shortcut screen — they currently share this same bug.
+
+After fixing, test explicitly: draw a vertical line, lift your finger, then draw a "less than" style stroke right next to it to form a "K" shape — confirm both strokes stay visible together on screen and are treated as one combined drawing, not cleared after the first stroke.
+
+Do not change any button styling, colors, layout, or animations — this is a logic-only fix.
+
+PROMPT END
