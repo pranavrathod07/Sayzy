@@ -1,0 +1,2 @@
+- [Expo SDK54 audio/speech/fs pinning](expo-sdk54-audio-pinning.md) — `pnpm add expo-audio/expo-speech/expo-file-system` grabs SDK57 versions; must hand-pin to match installed `expo` SDK.
+- [Offline gesture matching without ML Kit](offline-gesture-recognition.md) — $1 unistroke algorithm gives tolerant offline shape matching in Expo Go where native ML libs aren't available.
