@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -41,7 +42,12 @@ function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
           )}
         </View>
         <Pressable
-          onPress={() => deleteShortcut(shortcut.id)}
+          onPress={() =>
+            Alert.alert('Delete this shortcut?', 'This cannot be undone.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => deleteShortcut(shortcut.id) },
+            ])
+          }
           accessibilityLabel="Delete shortcut"
           hitSlop={8}
         >

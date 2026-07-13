@@ -11,8 +11,8 @@ import { SettingsPanel } from '@/components/panels/SettingsPanel';
 import { VoicesPanel } from '@/components/panels/VoicesPanel';
 import { SidebarRail } from '@/components/SidebarRail';
 import { TypeToSpeechBar } from '@/components/TypeToSpeechBar';
+import { useToast } from '@/components/Toast';
 import { useAppColors } from '@/hooks/useAppColors';
-import { useHistory } from '@/context/HistoryContext';
 import { useShortcuts } from '@/context/ShortcutsContext';
 import { useSpeech } from '@/context/SpeechContext';
 import { useSettings } from '@/context/SettingsContext';
@@ -31,8 +31,9 @@ export default function MainScreen() {
   const { settings } = useSettings();
   const { matchGesture } = useShortcuts();
   const { speak } = useSpeech();
-  const { entries } = useHistory();
+  const { showToast } = useToast();
   const [openPanel, setOpenPanel] = useState<PanelKey>(null);
+  const [canvasKey, setCanvasKey] = useState(0);
 
   const handleGestureComplete = useCallback(
     (strokes: Point[][]) => {
@@ -41,16 +42,19 @@ export default function MainScreen() {
         const phrase = match.shortcut.phrases[0];
         if (phrase) {
           speak(phrase.text, 'draw', phrase.voiceUri);
+          return;
         }
       }
+      showToast('No match found — tap Customize to save this');
     },
-    [matchGesture, speak],
+    [matchGesture, speak, showToast],
   );
 
   const handleNext = useCallback(() => {
-    const [latest] = entries;
-    if (latest) speak(latest.text, latest.source);
-  }, [entries, speak]);
+    // Reset the canvas and any in-progress input so the app is immediately
+    // ready for the next gesture, with no leftover state from the last one.
+    setCanvasKey((k) => k + 1);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -59,7 +63,7 @@ export default function MainScreen() {
         backgroundColor="transparent"
         translucent
       />
-      <DrawingCanvas onGestureComplete={handleGestureComplete} />
+      <DrawingCanvas key={canvasKey} onGestureComplete={handleGestureComplete} />
       <TypeToSpeechBar />
       <SidebarRail onOpen={setOpenPanel} />
       <CaptionOverlay />

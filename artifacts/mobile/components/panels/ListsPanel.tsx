@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -72,10 +73,19 @@ function TemplateEditor({ template, onBack }: { template: ListTemplate; onBack: 
       </View>
 
       <Pressable
-        onPress={() => {
-          deleteTemplate(template.id);
-          onBack();
-        }}
+        onPress={() =>
+          Alert.alert('Delete this list?', 'This cannot be undone.', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Delete',
+              style: 'destructive',
+              onPress: () => {
+                deleteTemplate(template.id);
+                onBack();
+              },
+            },
+          ])
+        }
         style={styles.deleteTemplateRow}
       >
         <Feather name="trash-2" size={14} color={colors.destructive} />

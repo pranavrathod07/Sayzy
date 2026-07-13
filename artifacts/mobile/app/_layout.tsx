@@ -9,6 +9,7 @@ import { ListsProvider } from '@/context/ListsContext';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ShortcutsProvider } from '@/context/ShortcutsContext';
 import { SpeechProvider } from '@/context/SpeechContext';
+import { ToastProvider } from '@/components/Toast';
 import {
   Inter_400Regular,
   Inter_500Medium,
@@ -55,15 +56,17 @@ export default function RootLayout() {
           <GestureHandlerRootView>
             <KeyboardProvider>
               <SettingsProvider>
-                <ShortcutsProvider>
-                  <HistoryProvider>
-                    <ListsProvider>
-                      <SpeechProvider>
-                        <RootLayoutNav />
-                      </SpeechProvider>
-                    </ListsProvider>
-                  </HistoryProvider>
-                </ShortcutsProvider>
+                <ToastProvider>
+                  <ShortcutsProvider>
+                    <HistoryProvider>
+                      <ListsProvider>
+                        <SpeechProvider>
+                          <RootLayoutNav />
+                        </SpeechProvider>
+                      </ListsProvider>
+                    </HistoryProvider>
+                  </ShortcutsProvider>
+                </ToastProvider>
               </SettingsProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
