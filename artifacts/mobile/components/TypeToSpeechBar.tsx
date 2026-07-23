@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import React, { useMemo, useState } from 'react';
 import {
   FlatList,
+  KeyboardAvoidingView,
   Platform,
   Pressable,
   StyleSheet,
@@ -71,7 +72,8 @@ export function TypeToSpeechBar() {
     const shortcut = matchCode(trimmed);
     if (shortcut && shortcut.phrases.length > 0) {
       if (shortcut.phrases.length === 1) {
-        speak(shortcut.phrases[0]!.text, 'code', shortcut.phrases[0]!.voiceUri);
+        const phrase = shortcut.phrases[0]!;
+        speak(phrase.text, 'code', phrase.voiceUri, phrase.language);
       } else {
         setPicker(shortcut.phrases.map((p) => p.text));
         return;
@@ -105,59 +107,63 @@ export function TypeToSpeechBar() {
 
   return (
     <Animated.View style={[styles.wrap, { top: topInset + 14 }, style]}>
-      <View style={[styles.inputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <TextInput
-          autoFocus
-          value={text}
-          onChangeText={(v) => {
-            setText(v);
-            setPicker(null);
-          }}
-          onSubmitEditing={() => submit(text)}
-          placeholder="Type a word, sentence, or shortcut code"
-          placeholderTextColor={colors.mutedForeground}
-          style={[styles.input, { color: colors.foreground }]}
-          returnKeyType="send"
-        />
-        <Pressable onPress={() => submit(text)} hitSlop={8}>
-          <Feather name="send" size={20} color={colors.primary} />
-        </Pressable>
-        <Pressable onPress={closeBar} hitSlop={8}>
-          <Feather name="x" size={20} color={colors.mutedForeground} />
-        </Pressable>
-      </View>
-      {picker && (
-        <View style={[styles.suggestions, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.suggestLabel, { color: colors.mutedForeground }]}>Which one did you mean?</Text>
-          {picker.map((p) => (
-            <Pressable
-              key={p}
-              onPress={() => {
-                speak(p, 'code');
-                setText('');
-                setPicker(null);
-                closeBar();
-              }}
-              style={styles.suggestionRow}
-            >
-              <Text style={[styles.suggestionText, { color: colors.foreground }]}>{p}</Text>
-            </Pressable>
-          ))}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={[styles.inputRow, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <TextInput
+            autoFocus
+            value={text}
+            onChangeText={(v) => {
+              setText(v);
+              setPicker(null);
+            }}
+            onSubmitEditing={() => submit(text)}
+            placeholder="Type a word, sentence, or shortcut code"
+            placeholderTextColor={colors.mutedForeground}
+            style={[styles.input, { color: colors.foreground }]}
+            returnKeyType="send"
+          />
+          <Pressable onPress={() => submit(text)} hitSlop={8}>
+            <Feather name="send" size={20} color={colors.primary} />
+          </Pressable>
+          <Pressable onPress={closeBar} hitSlop={8}>
+            <Feather name="x" size={20} color={colors.mutedForeground} />
+          </Pressable>
         </View>
-      )}
-      {!picker && suggestions.length > 0 && (
-        <FlatList
-          data={suggestions}
-          keyExtractor={(item) => item}
-          style={[styles.suggestions, { backgroundColor: colors.card, borderColor: colors.border }]}
-          scrollEnabled={suggestions.length > 3}
-          renderItem={({ item }) => (
-            <Pressable onPress={() => submit(item)} style={styles.suggestionRow}>
-              <Text style={[styles.suggestionText, { color: colors.foreground }]}>{item}</Text>
-            </Pressable>
-          )}
-        />
-      )}
+        {picker && (
+          <View style={[styles.suggestions, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.suggestLabel, { color: colors.mutedForeground }]}>Which one did you mean?</Text>
+            {picker.map((p) => (
+              <Pressable
+                key={p}
+                onPress={() => {
+                  speak(p, 'code');
+                  setText('');
+                  setPicker(null);
+                  closeBar();
+                }}
+                style={styles.suggestionRow}
+              >
+                <Text style={[styles.suggestionText, { color: colors.foreground }]}>{p}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+        {!picker && suggestions.length > 0 && (
+          <FlatList
+            data={suggestions}
+            keyExtractor={(item) => item}
+            style={[styles.suggestions, { backgroundColor: colors.card, borderColor: colors.border }]}
+            scrollEnabled={suggestions.length > 3}
+            renderItem={({ item }) => (
+              <Pressable onPress={() => submit(item)} style={styles.suggestionRow}>
+                <Text style={[styles.suggestionText, { color: colors.foreground }]}>{item}</Text>
+              </Pressable>
+            )}
+          />
+        )}
+      </KeyboardAvoidingView>
     </Animated.View>
   );
 }

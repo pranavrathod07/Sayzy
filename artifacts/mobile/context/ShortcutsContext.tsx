@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { generateId } from '@/utils/id';
 import { flattenStrokes, recognizeStroke } from '@/utils/gestureRecognizer';
+import { detectLanguage } from '@/utils/languageDetection';
 import type { Phrase, Point, Shortcut } from '@/types';
 
 const STORAGE_KEY = 'speaknow:shortcuts:v1';
@@ -32,6 +33,11 @@ type ShortcutsContextValue = {
     shortcutId: string,
     phraseId: string,
     voiceUri: string | undefined,
+  ) => void;
+  setPhraseLanguage: (
+    shortcutId: string,
+    phraseId: string,
+    language: string | undefined,
   ) => void;
   matchCode: (code: string) => Shortcut | null;
   matchGesture: (strokes: Point[][]) => { shortcut: Shortcut; score: number } | null;
@@ -106,10 +112,21 @@ export function ShortcutsProvider({ children }: { children: React.ReactNode }) {
   const addPhrase = useCallback(
     (shortcutId: string, text: string) => {
       if (!text.trim()) return;
+      const detectedLang = detectLanguage(text);
       persist(
         shortcuts.map((s) =>
           s.id === shortcutId
-            ? { ...s, phrases: [...s.phrases, { id: generateId(), text: text.trim() }] }
+            ? { 
+                ...s, 
+                phrases: [
+                  ...s.phrases, 
+                  { 
+                    id: generateId(), 
+                    text: text.trim(),
+                    language: detectedLang !== 'en-US' ? detectedLang : undefined,
+                  }
+                ] 
+              }
             : s,
         ),
       );
@@ -166,6 +183,24 @@ export function ShortcutsProvider({ children }: { children: React.ReactNode }) {
     [shortcuts, persist],
   );
 
+  const setPhraseLanguage = useCallback(
+    (shortcutId: string, phraseId: string, language: string | undefined) => {
+      persist(
+        shortcuts.map((s) =>
+          s.id === shortcutId
+            ? {
+                ...s,
+                phrases: s.phrases.map((p) =>
+                  p.id === phraseId ? { ...p, language: language as any } : p,
+                ),
+              }
+            : s,
+        ),
+      );
+    },
+    [shortcuts, persist],
+  );
+
   const matchCode = useCallback(
     (code: string): Shortcut | null => {
       const normalized = code.trim().toUpperCase();
@@ -202,6 +237,7 @@ export function ShortcutsProvider({ children }: { children: React.ReactNode }) {
         updatePhrase,
         deletePhrase,
         setPhraseVoice,
+        setPhraseLanguage,
         matchCode,
         matchGesture,
       }}

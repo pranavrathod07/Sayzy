@@ -16,7 +16,12 @@
     "ios": {
       "supportsTablet": false
     },
-    "android": {},
+    "android": {
+    "permissions": [
+      "android.permission.INTERNET",
+      "android.permission.RECORD_AUDIO"
+    ]
+  },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
@@ -34,7 +39,8 @@
         {
           "microphonePermission": "Speak Now uses the microphone to record a family member's voice for a phrase."
         }
-      ]
+      ],
+      "expo-speech"
     ],
     "experiments": {
       "typedRoutes": true,
