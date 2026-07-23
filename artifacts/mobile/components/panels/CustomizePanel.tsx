@@ -2,6 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,7 +18,7 @@ import { DrawingCanvas } from '../DrawingCanvas';
 
 function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
   const colors = useAppColors();
-  const { deleteShortcut, addPhrase, updatePhrase, deletePhrase } = useShortcuts();
+  const { deleteShortcut, addPhrase, updatePhrase, deletePhrase, setPhraseLanguage } = useShortcuts();
   const [newPhrase, setNewPhrase] = useState('');
   const [editing, setEditing] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
@@ -80,10 +82,40 @@ function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
                 setEditText(phrase.text);
               }}
             >
-              <Text style={[styles.phraseText, { color: colors.foreground }]}>{phrase.text}</Text>
+              <View>
+                <Text style={[styles.phraseText, { color: colors.foreground }]}>{phrase.text}</Text>
+                {phrase.language && phrase.language !== 'en-US' && (
+                  <Text style={[styles.phraseLanguage, { color: colors.mutedForeground }]}>
+                    {phrase.language === 'hi-IN' ? 'हिन्दी' : phrase.language}
+                  </Text>
+                )}
+              </View>
             </Pressable>
           )}
           {phrase.voiceUri && <Feather name="mic" size={14} color={colors.mutedForeground} />}
+          <View style={styles.languageToggle}>
+            <Pressable
+              onPress={() => setPhraseLanguage(shortcut.id, phrase.id, phrase.language === 'hi-IN' ? undefined : 'hi-IN')}
+              style={[
+                styles.languageButton,
+                {
+                  backgroundColor: phrase.language === 'hi-IN' ? colors.primary : colors.secondary,
+                  borderColor: colors.border,
+                },
+              ]}
+              hitSlop={6}
+            >
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: '600',
+                  color: phrase.language === 'hi-IN' ? colors.primaryForeground : colors.secondaryForeground,
+                }}
+              >
+                {phrase.language === 'hi-IN' ? 'HI' : 'EN'}
+              </Text>
+            </Pressable>
+          </View>
           <Pressable
             onPress={() => deletePhrase(shortcut.id, phrase.id)}
             accessibilityLabel="Delete phrase"
@@ -137,16 +169,25 @@ function NewShortcutForm({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <Text style={[styles.label, { color: colors.mutedForeground }]}>Shortcut code (optional)</Text>
-      <TextInput
-        value={code}
-        onChangeText={setCode}
-        placeholder="e.g. KH"
-        autoCapitalize="characters"
-        placeholderTextColor={colors.mutedForeground}
-        style={[styles.phraseInput, { color: colors.foreground, borderColor: colors.border }]}
-      />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+    >
+      <ScrollView
+        scrollEnabled
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Text style={[styles.label, { color: colors.mutedForeground }]}>Shortcut code (optional)</Text>
+        <TextInput
+          value={code}
+          onChangeText={setCode}
+          placeholder="e.g. KH"
+          autoCapitalize="characters"
+          placeholderTextColor={colors.mutedForeground}
+          style={[styles.phraseInput, { color: colors.foreground, borderColor: colors.border }]}
+        />
 
       <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 12 }]}>
         Draw a symbol (optional)
@@ -202,7 +243,8 @@ function NewShortcutForm({ onDone }: { onDone: () => void }) {
           <Text style={{ color: colors.primaryForeground, fontWeight: '600' }}>Save</Text>
         </Pressable>
       </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -313,6 +355,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     borderBottomWidth: 1,
     paddingVertical: 6,
+  },
+  phraseLanguage: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  languageToggle: {
+    marginLeft: 4,
+  },
+  languageButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   addPhraseRow: {
     flexDirection: 'row',

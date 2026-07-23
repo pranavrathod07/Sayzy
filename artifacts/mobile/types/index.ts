@@ -3,6 +3,8 @@ export type Point = { x: number; y: number };
 export type Phrase = {
   id: string;
   text: string;
+  /** Language code for this phrase (e.g., 'en-US', 'hi-IN'). Defaults to global setting. */
+  language?: SpeechLanguage;
   /** Local file uri of a caregiver-recorded voice clip, if any. */
   voiceUri?: string;
 };

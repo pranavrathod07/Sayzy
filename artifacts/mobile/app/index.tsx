@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { BottomSheetPanel } from '@/components/BottomSheetPanel';
 import { CaptionOverlay } from '@/components/CaptionOverlay';
@@ -30,10 +30,15 @@ export default function MainScreen() {
   const colors = useAppColors();
   const { settings } = useSettings();
   const { matchGesture } = useShortcuts();
-  const { speak } = useSpeech();
+  const { speak, onError } = useSpeech();
   const { showToast } = useToast();
   const [openPanel, setOpenPanel] = useState<PanelKey>(null);
   const [canvasKey, setCanvasKey] = useState(0);
+
+  // Register error handler on mount
+  useEffect(() => {
+    onError(showToast);
+  }, [onError, showToast]);
 
   const handleGestureComplete = useCallback(
     (strokes: Point[][]) => {
@@ -41,7 +46,7 @@ export default function MainScreen() {
       if (match) {
         const phrase = match.shortcut.phrases[0];
         if (phrase) {
-          speak(phrase.text, 'draw', phrase.voiceUri);
+          speak(phrase.text, 'draw', phrase.voiceUri, phrase.language);
           return;
         }
       }
